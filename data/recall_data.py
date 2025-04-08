@@ -7,8 +7,13 @@ schema = pa.schema(
         pa.field("id", pa.int64(), nullable=False),
         pa.field("neo_reference_id", pa.int64(), nullable=False),
         pa.field("name", pa.string(), nullable=True),
-        pa.field("name_limited", pa.float64(), nullable=False),
-        pa.field("designation"),
+        pa.field("name_limited", pa.string(), nullable=True),
+        pa.field("designation", pa.int64() , nullable=True),
+        pa.field("nasa_jpl_url", pa.string(), nullable=True),
+        pa.field("absolute_magnitude_h", pa.float64(), nullable=True),
+        pa.field("is_potentially_hazardous_asteroid", pa.bool_(), nullable=True),
+        pa.field("estimated_diameter_min", pa.float64(), nullable=True),
+        pa.field("estimated_diameter_max", pa.float64(), nullable=True)
     ]
 )
 
