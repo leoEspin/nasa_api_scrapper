@@ -45,13 +45,13 @@ def process_batch(obj: dict[str, Any], table_schema: pa.Schema) -> pa.Table:
             item.get("is_potentially_hazardous_asteroid") for item in obj
         ],
         "estimated_diameter_min": [
-            NeoAPI.nested_get(
+            nested_get(
                 item, ["estimated_diameter", "meters", "estimated_diameter_min"]
             )
             for item in obj
         ],
         "estimated_diameter_max": [
-            NeoAPI.nested_get(
+            nested_get(
                 item, ["estimated_diameter", "meters", "estimated_diameter_max"]
             )
             for item in obj
