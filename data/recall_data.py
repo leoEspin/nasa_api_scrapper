@@ -7,18 +7,33 @@ from urllib.parse import urlencode
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-base_url = f"https://api.nasa.gov/neo/rest/v1/neo/browse"
-params = {"api_key": get_api_key(), "page": None, "size": None}
 
+class NeoAPI:
+    base_url = "https://api.nasa.gov/neo/rest/v1/neo/browse"
+    def __init__(self):
+        self.key = NeoAPI.get_api_key()
+        self.page = 0
+        self.size = 20
 
-def get_api_key(path: str) -> str:
-    load_dotenv(dotenv_path=path)
-    api_key = os.getenv("API_KEY")
-    if api_key:
-        return api_key
+    @staticmethod
+    def get_api_key(path: str) -> str:
+        if path is  not None:
+            load_dotenv(dotenv_path=path)
+        else:
+            load_dotenv()
 
-    raise ValueError(f"API_KEY not found in {path}.env file.")
+        api_key = os.getenv("API_KEY")
+        if api_key:
+            return api_key
 
+        raise ValueError(f"API_KEY not found in {path}.env file.")
+
+    def get_neo_data_batch(self):
+        params = {'api_key' : self.key, }
+        out = requests.get(f"{base_url}?{urlencode(params)}")
+        if out.ok:
+            return out.json()
+        raise Exception(out.json())
 
 schema = pa.schema(
     [
@@ -76,8 +91,3 @@ def store_batch(batch: pa.Table, path: str, batch_number: int) -> None:
     )
 
 
-def get_neo_data_batch(base_url: str, params: dict[str, Any], batch_size: int):
-
-    out = requests.get(f"{base_url}?{urlencode(params)}")
-    if out.ok:
-        return out.json()
