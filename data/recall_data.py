@@ -10,11 +10,21 @@ import pyarrow.parquet as pq
 
 class NeoAPI:
     base_url = "https://api.nasa.gov/neo/rest/v1/neo/browse"
+    # top level keys to navigate/pull relevant portion of payload
+    response_key_to_keep = 'near_earth_objects'
+    max_pages_keys = ['page', 'total_pages']
+
     def __init__(self):
         self.key = NeoAPI.get_api_key()
         self.page = 0
-        self.size = 20
+        self.response_size = 20
+        self.batch_responses = 5
+        self._max_pages = None
 
+    @property
+    def batch_size(self):
+        return self.response_size * self.batch_responses
+        
     @staticmethod
     def get_api_key(path: str) -> str:
         if path is  not None:
@@ -28,12 +38,39 @@ class NeoAPI:
 
         raise ValueError(f"API_KEY not found in {path}.env file.")
 
+    @staticmethod
+    def nested_get(d: dict[str, Any], keys: list[str], default: Any = None):
+        for key in keys:
+            if isinstance(d, dict) and key in d:
+                d = d[key]
+            else:
+                return default
+        return d
+
+    @property
+    def max_pages(self):
+        if self._max_pages is None:
+            params = {'api_key': self.key, 'page': 0, 'size': 1}
+            out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
+            if out.ok:
+                response_data = out.json()
+                self._max_pages = NeoAPI.nested_get(response_data, NeoAPI.max_pages_keys)
+            else:
+                raise Exception(out.json())
+        return self._max_pages
+
     def get_neo_data_batch(self):
-        params = {'api_key' : self.key, }
-        out = requests.get(f"{base_url}?{urlencode(params)}")
+        if self.page > self.max_pages:
+            raise ValueError('Maximum number of available pages reached.')
+
+        params = {'api_key': self.key, 'page': self.page, 'size': self.response_size}
+        out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
         if out.ok:
-            return out.json()
+            self.page += 1 
+            return out.json().get(NeoAPI.response_key_to_keep)
         raise Exception(out.json())
+        
+
 
 schema = pa.schema(
     [
@@ -50,14 +87,6 @@ schema = pa.schema(
     ]
 )
 
-
-def nested_get(d: dict[str, Any], keys: list[str], default: Any = None):
-    for key in keys:
-        if isinstance(d, dict) and key in d:
-            d = d[key]
-        else:
-            return default
-    return d
 
 
 def process_batch(obj: dict[str, Any], table_schema: pa.Schema) -> pa.Table:
