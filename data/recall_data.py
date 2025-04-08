@@ -11,8 +11,8 @@ import pyarrow.parquet as pq
 class NeoAPI:
     base_url = "https://api.nasa.gov/neo/rest/v1/neo/browse"
     # top level keys to navigate/pull relevant portion of payload
-    response_key_to_keep = 'near_earth_objects'
-    max_pages_keys = ['page', 'total_pages']
+    response_key_to_keep = "near_earth_objects"
+    max_pages_keys = ["page", "total_pages"]
 
     def __init__(self):
         self.key = NeoAPI.get_api_key()
@@ -24,10 +24,10 @@ class NeoAPI:
     @property
     def batch_size(self):
         return self.response_size * self.batch_responses
-        
+
     @staticmethod
     def get_api_key(path: str) -> str:
-        if path is  not None:
+        if path is not None:
             load_dotenv(dotenv_path=path)
         else:
             load_dotenv()
@@ -50,26 +50,27 @@ class NeoAPI:
     @property
     def max_pages(self):
         if self._max_pages is None:
-            params = {'api_key': self.key, 'page': 0, 'size': 1}
+            params = {"api_key": self.key, "page": 0, "size": 1}
             out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
             if out.ok:
                 response_data = out.json()
-                self._max_pages = NeoAPI.nested_get(response_data, NeoAPI.max_pages_keys)
+                self._max_pages = NeoAPI.nested_get(
+                    response_data, NeoAPI.max_pages_keys
+                )
             else:
                 raise Exception(out.json())
         return self._max_pages
 
     def get_neo_data_batch(self):
         if self.page > self.max_pages:
-            raise ValueError('Maximum number of available pages reached.')
+            raise ValueError("Maximum number of available pages reached.")
 
-        params = {'api_key': self.key, 'page': self.page, 'size': self.response_size}
+        params = {"api_key": self.key, "page": self.page, "size": self.response_size}
         out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
         if out.ok:
-            self.page += 1 
+            self.page += 1
             return out.json().get(NeoAPI.response_key_to_keep)
         raise Exception(out.json())
-        
 
 
 schema = pa.schema(
@@ -86,7 +87,6 @@ schema = pa.schema(
         pa.field("estimated_diameter_max", pa.float64(), nullable=True),
     ]
 )
-
 
 
 def process_batch(obj: dict[str, Any], table_schema: pa.Schema) -> pa.Table:
@@ -118,5 +118,3 @@ def store_batch(batch: pa.Table, path: str, batch_number: int) -> None:
     pq.write_table(
         table, f"{path}/nasa_neo_data_{batch_number}.parquet", compression="snappy"
     )
-
-
