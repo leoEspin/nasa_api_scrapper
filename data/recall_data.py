@@ -19,6 +19,7 @@ class NeoAPI:
         self.page = 0
         self.response_size = 20
         self.batch_responses = 5
+        self._params = {"api_key": self.key, "page": self.page, "size": self.response_size}
         self._max_pages = None
 
     @property
@@ -61,16 +62,22 @@ class NeoAPI:
                 raise Exception(out.json())
         return self._max_pages
 
-    def get_neo_data_batch(self):
+    def get_mini_batch(self):
         if self.page > self.max_pages:
             raise ValueError("Maximum number of available pages reached.")
-
-        params = {"api_key": self.key, "page": self.page, "size": self.response_size}
-        out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
+        
+        self._params["page"] = self.page
+        out = requests.get(f"{NeoAPI.base_url}?{urlencode(self._params)}")
         if out.ok:
             self.page += 1
             return out.json().get(NeoAPI.response_key_to_keep)
         raise Exception(out.json())
+
+    def get_batch(self):
+        batch = []
+        for _ in range(self.batch_size):
+            batch.append(self.get_mini_batch())
+        return batch
 
 
 schema = pa.schema(
