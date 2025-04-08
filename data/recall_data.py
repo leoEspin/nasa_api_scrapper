@@ -1,6 +1,12 @@
+import os
+from dotenv import load_dotenv
 from typing import Any, Optional
 from datetime import datetime
+import requests
 import pyarrow as pa
+import pyarrow.parquet as pq
+
+base_url = f'https://api.nasa.gov/neo/rest/v1/neo/browse?'
 
 schema = pa.schema(
     [
@@ -27,8 +33,8 @@ def nested_get(d: dict[str, Any], keys: list[str], default: Any = None):
     return d
 
 
-def process_rows(obj: dict[str, Any]):
-    data_dict = {
+def process_batch(obj: dict[str, Any], table_schema: pa.Schema)-> pa.Table:
+    data = {
         "id": [item.get("id") for item in obj],
         "neo_reference_id": [item.get("neo_reference_id") for item in obj],
         "name": [item.get("name") for item in obj],
@@ -48,4 +54,10 @@ def process_rows(obj: dict[str, Any]):
             for item in obj
         ],
     }
-    return data_dict
+    table = pa.Table.from_pydict(data, schema=table_schema)
+    return table
+
+def store_batch(batch: pa.Table, path: str, batch_number: int)-> None:
+    pq.write_table(table, f"{path}/nasa_neo_data_{batch_number}.parquet", compression='snappy')
+
+
