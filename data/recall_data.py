@@ -14,8 +14,8 @@ class NeoAPI:
     response_key_to_keep = "near_earth_objects"
     max_pages_keys = ["page", "total_pages"]
 
-    def __init__(self):
-        self.key = NeoAPI.get_api_key()
+    def __init__(self, path: Optional[str] = None):
+        self.key = NeoAPI.get_api_key(path=path)
         self.page = 0
         self.response_size = 20
         self.batch_responses = 5
@@ -29,6 +29,8 @@ class NeoAPI:
     @staticmethod
     def get_api_key(path: str) -> str:
         if path is not None:
+            if not path.endswith(".env"):
+                path = os.path.join(path, ".env")
             load_dotenv(dotenv_path=path)
         else:
             load_dotenv()
@@ -75,8 +77,8 @@ class NeoAPI:
 
     def get_batch(self):
         batch = []
-        for _ in range(self.batch_size):
-            batch.append(self.get_mini_batch())
+        for _ in range(self.batch_responses):
+            batch.extend(self.get_mini_batch())
         return batch
 
 
