@@ -37,3 +37,8 @@ To save our data, we'll write it out to the local filesystem as if we're saving 
 
 ### Submitting your coding exercise
 Once you have finished your script, please create a PR into Tekmetric/interview. Don't forget to update the gitignore if that is required!
+
+
+### Notes
+* current execution time in  cloud shell (Intel(R) Xeon(R) CPU @ 2.20GHz,  4 CPUs): pulling data  for 200 asteroids: 9.318s
+* I'm using a list type for `close_approach_years`, which I think makes more sense than a dictionary. I'm not an astrophysicist, but I'd image all asteroids have a return period longer than a year. otherwise they'd be satellites
