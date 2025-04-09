@@ -50,6 +50,8 @@ def to_float(value: Any) -> Optional[float]:
 def process_batch(
     obj: dict[str, Any], table_schema: pa.Schema = main_schema
 ) -> pa.Table:
+    # pulling closest approach data for further processing.
+    # minimizing a high-press double, so ok assuming uniqueness
     close_data = [
         (
             min(
@@ -64,6 +66,7 @@ def process_batch(
         for item in obj
     ]
 
+    #TODO: reduce number of scans of the data
     data = {
         "id": [to_int(item.get("id")) for item in obj],
         "neo_reference_id": [to_int(item.get("neo_reference_id")) for item in obj],
