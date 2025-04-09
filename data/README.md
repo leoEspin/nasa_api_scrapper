@@ -42,3 +42,7 @@ Once you have finished your script, please create a PR into Tekmetric/interview.
 ### Notes
 * current execution time in  cloud shell (Intel(R) Xeon(R) CPU @ 2.20GHz,  4 CPUs): pulling data  for 200 asteroids: 9.318s
 * I'm using a list type for `close_approach_years`, which I think makes more sense than a dictionary. I'm not an astrophysicist, but I'd image all asteroids have a return period longer than a year. otherwise they'd be satellites
+* example of how to use the scrapper:
+    ```bash
+    python  recall_data.py --destination=data --api_key_location=data --asteroids=20 --file_batch_size=20 --request_size=20
+    ```
