@@ -20,11 +20,12 @@ class NeoAPI:
     To use the class first instanciate it:
         client = NeoAPI(key_file_path, batch_size, request_size, page)
     the  class assumes that the api key is stored in a .env file with the name API_KEY
-
+    then get a batch of data from  the API by calling the  method
+        client.get_batch()
     A batch,  of size batch_size is  formed by doing a series of requests of size request_size
     This  is  useful to have separate control of the number of asteroids' data stored in a single file.
 
-    The initialization parameter page allows to skip a number of pages of size request_size. 
+    The initialization parameter page allows to skip a number of pages of size request_size.
     this is useful for enabling making parallel calls to the API, and storing the corresponding data in separate files.
     """
 
@@ -39,7 +40,7 @@ class NeoAPI:
         batch_size: int = 100,
         request_size: int = 20,
         page: int = 0,
-    ):  
+    ):
         self.key = NeoAPI.get_api_key(key_file_path)
         self.page = page
         self.request_size = request_size
@@ -52,7 +53,7 @@ class NeoAPI:
         self._max_pages = None
 
     @property
-    def batch_responses(self):
+    def batch_responses(self) -> int:
         return self.batch_size // self.request_size
 
     @staticmethod
@@ -71,7 +72,7 @@ class NeoAPI:
         raise ValueError(f"API_KEY not found in {path}.env file.")
 
     @property
-    def max_pages(self):
+    def max_pages(self) -> int:
         if self._max_pages is None:
             params = {"api_key": self.key, "page": 0, "size": 1}
             out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
@@ -82,7 +83,7 @@ class NeoAPI:
                 raise Exception(out.json())
         return self._max_pages
 
-    def _get_mini_batch(self):
+    def _get_mini_batch(self) -> list[dict[str, Any]]:
         if self.page > self.max_pages:
             raise ValueError("Maximum number of available pages reached.")
 
@@ -93,7 +94,7 @@ class NeoAPI:
             return out.json().get(NeoAPI.response_key_to_keep)
         raise Exception(out.json())
 
-    def get_batch(self):
+    def get_batch(self) -> list[dict[str, Any]]:
         batch = []
         for _ in range(self.batch_responses):
             batch.extend(self._get_mini_batch())
