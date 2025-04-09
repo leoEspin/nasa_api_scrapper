@@ -27,8 +27,8 @@ main_schema = pa.schema(
         pa.field("close_approach_speed", pa.float64(), nullable=True),
         pa.field("very_close_approaches", pa.int64(), nullable=True),
         pa.field(
-            "close_approaches_per_year",
-            pa.map_(pa.string(), pa.int64()),
+            "close_approach_years",
+            pa.list_(pa.string()),
             nullable=True,
         ),
     ]
@@ -148,14 +148,15 @@ def process_batch(
             )
             for item in obj
         ],
-        "close_approaches_per_year": [
-            dict(
-                Counter(
-                    [
-                        x["close_approach_date"].split("-")[0]
-                        for x in item["close_approach_data"]
-                    ]
-                )
+        "close_approach_years": [
+            (
+                [
+                    x.get("close_approach_date").split("-")[0]
+                    for x in item["close_approach_data"]
+                    if x.get("close_approach_date") is not None
+                ]
+                if len(item["close_approach_data"]) > 0
+                else []
             )
             for item in obj
         ],
