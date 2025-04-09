@@ -1,6 +1,7 @@
 import argparse
-from .api_interface import NeoAPI
-from .data_processing import process_batch, schema, store_batch
+from api_interface import NeoAPI
+from data_processing import process_batch, schema, store_batch
+
 
 def parcero():
     """defines command line arguments"""

@@ -65,9 +65,7 @@ class NeoAPI:
             out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
             if out.ok:
                 response_data = out.json()
-                self._max_pages = nested_get(
-                    response_data, NeoAPI.max_pages_keys
-                )
+                self._max_pages = nested_get(response_data, NeoAPI.max_pages_keys)
             else:
                 raise Exception(out.json())
         return self._max_pages
