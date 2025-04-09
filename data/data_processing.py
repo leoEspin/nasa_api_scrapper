@@ -59,7 +59,7 @@ def process_batch(
     obj: dict[str, Any], table_schema: pa.Schema = main_schema
 ) -> pa.Table:
     # pulling closest approach data for further processing.
-    # minimizing a high-press double, so ok assuming uniqueness
+    # minimizing a high-precision double, so ok assuming uniqueness
     close_data = [
         (
             min(
