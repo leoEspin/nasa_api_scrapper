@@ -21,28 +21,13 @@ main_schema = pa.schema(
         pa.field("last_observation_date", pa.timestamp("s"), nullable=False),
         pa.field("observations_used", pa.int64(), nullable=True),
         pa.field("orbital_period", pa.float64(), nullable=True),
+        pa.field("close_approach_miss_distance", pa.float64(), nullable=True),
+        pa.field("close_approach_date", pa.timestamp("s"), nullable=True),
+        pa.field("close_approach_speed", pa.float64(), nullable=True),        
     ]
 )
 
-close_approach_schema = pa.schema(
-    [
-        pa.field("id", pa.int64(), nullable=False),
-        pa.field("neo_reference_id", pa.int64(), nullable=False),
-        pa.field("name", pa.string(), nullable=True),
-        pa.field("name_limited", pa.string(), nullable=True),
-        pa.field("designation", pa.int64(), nullable=True),
-        pa.field("nasa_jpl_url", pa.string(), nullable=True),
-        pa.field("absolute_magnitude_h", pa.float64(), nullable=True),
-        pa.field("is_potentially_hazardous_asteroid", pa.bool_(), nullable=True),
-        pa.field("estimated_diameter_min", pa.float64(), nullable=True),
-        pa.field("first_observation_date", pa.timestamp("s"), nullable=False),
-        pa.field("last_observation_date", pa.timestamp("s"), nullable=False),
-        pa.field("observations_used", pa.int64(), nullable=True),
-        pa.field("orbital_period", pa.float64(), nullable=True),
-    ]
-)
-
-def to_int(value: Any)-> Optional[int]:
+def to_int(value: Any) -> Optional[int]:
     if value is None:
         return None
     try:
@@ -51,7 +36,8 @@ def to_int(value: Any)-> Optional[int]:
         print(f"Warning: Could not convert '{value}' to int. Setting to None.")
         return None
 
-def to_float(value: Any)-> Optional[float]:
+
+def to_float(value: Any) -> Optional[float]:
     if value is None:
         return None
     try:
@@ -61,7 +47,23 @@ def to_float(value: Any)-> Optional[float]:
         return None
 
 
-def process_batch(obj: dict[str, Any], table_schema: pa.Schema) -> pa.Table:
+def process_batch(
+    obj: dict[str, Any], table_schema: pa.Schema = main_schema
+) -> pa.Table:
+    close_data = [
+        (
+            min(
+                item["close_approach_data"],
+                key=lambda x: nested_get(
+                    x, ["miss_distance", "astronomical"], default=float("inf")
+                ),
+            )
+            if len(item["close_approach_data"]) > 0
+            else {}
+        )
+        for item in obj
+    ]
+
     data = {
         "id": [to_int(item.get("id")) for item in obj],
         "neo_reference_id": [to_int(item.get("neo_reference_id")) for item in obj],
@@ -107,10 +109,23 @@ def process_batch(obj: dict[str, Any], table_schema: pa.Schema) -> pa.Table:
             to_float(nested_get(item, ["orbital_data", "orbital_period"]))
             for item in obj
         ],
+        "close_approach_miss_distance": [
+            to_float(nested_get(x, ["miss_distance", "kilometers"])) for x in close_data
+        ],
+        "close_approach_date": [
+            (
+                datetime.strptime(x.get("close_approach_date_full"), "%Y-%b-%d %H:%M")
+                if x.get("close_approach_date_full") is not None
+                else None
+            )
+            for x in close_data
+        ],
+        "close_approach_speed": [
+            to_float(nested_get(x, ["relative_velocity", "kilometers_per_second"])) for x in close_data
+        ],
     }
     table = pa.Table.from_pydict(data, schema=table_schema)
     return table
-
 
 def store_batch(batch: pa.Table, destination_path: str, batch_number: int) -> None:
     pq.write_table(
@@ -119,5 +134,3 @@ def store_batch(batch: pa.Table, destination_path: str, batch_number: int) -> No
         compression="snappy",
     )
 
-def process_close_approaches(obj: dict[str, Any], table_schema: pa.Schema) -> pa.Table:
-    pass

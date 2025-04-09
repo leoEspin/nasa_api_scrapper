@@ -1,6 +1,6 @@
 import argparse
 from api_interface import NeoAPI
-from data_processing import process_batch, main_schema, store_batch
+from data_processing import process_batch, store_batch
 
 
 def parcero():
@@ -51,5 +51,5 @@ if __name__ == "__main__":
     nbatches = arguments.asteroids // client.batch_size
     for i in range(nbatches):
         raw_batch = client.get_batch()
-        batch = process_batch(raw_batch, main_schema)
+        batch = process_batch(raw_batch)
         store_batch(batch, arguments.destination, i)
