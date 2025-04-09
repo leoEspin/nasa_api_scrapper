@@ -1,6 +1,7 @@
 import os
 from typing import Any, Optional
 from datetime import datetime
+from collections import Counter
 import pyarrow as pa
 import pyarrow.parquet as pq
 from api_interface import nested_get
@@ -25,6 +26,11 @@ main_schema = pa.schema(
         pa.field("close_approach_date", pa.timestamp("s"), nullable=True),
         pa.field("close_approach_speed", pa.float64(), nullable=True),
         pa.field("very_close_approaches", pa.int64(), nullable=True),
+        pa.field(
+            "close_approaches_per_year",
+            pa.map_(pa.string(), pa.int64()),
+            nullable=True,
+        ),
     ]
 )
 
@@ -139,6 +145,17 @@ def process_batch(
                 )
                 if len(item["close_approach_data"]) > 0
                 else None
+            )
+            for item in obj
+        ],
+        "close_approaches_per_year": [
+            dict(
+                Counter(
+                    [
+                        x["close_approach_date"].split("-")[0]
+                        for x in item["close_approach_data"]
+                    ]
+                )
             )
             for item in obj
         ],
