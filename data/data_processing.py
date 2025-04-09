@@ -23,9 +23,11 @@ main_schema = pa.schema(
         pa.field("orbital_period", pa.float64(), nullable=True),
         pa.field("close_approach_miss_distance", pa.float64(), nullable=True),
         pa.field("close_approach_date", pa.timestamp("s"), nullable=True),
-        pa.field("close_approach_speed", pa.float64(), nullable=True),        
+        pa.field("close_approach_speed", pa.float64(), nullable=True),
+        pa.field("very_close_approaches", pa.int64(), nullable=True),
     ]
 )
+
 
 def to_int(value: Any) -> Optional[int]:
     if value is None:
@@ -66,7 +68,7 @@ def process_batch(
         for item in obj
     ]
 
-    #TODO: reduce number of scans of the data
+    # TODO: reduce number of scans of the data
     data = {
         "id": [to_int(item.get("id")) for item in obj],
         "neo_reference_id": [to_int(item.get("neo_reference_id")) for item in obj],
@@ -124,11 +126,26 @@ def process_batch(
             for x in close_data
         ],
         "close_approach_speed": [
-            to_float(nested_get(x, ["relative_velocity", "kilometers_per_second"])) for x in close_data
+            to_float(nested_get(x, ["relative_velocity", "kilometers_per_second"]))
+            for x in close_data
+        ],
+        "very_close_approaches": [
+            (
+                sum(
+                    [
+                        float(nested_get(x, ["miss_distance", "astronomical"])) < 0.2
+                        for x in item["close_approach_data"]
+                    ]
+                )
+                if len(item["close_approach_data"]) > 0
+                else None
+            )
+            for item in obj
         ],
     }
     table = pa.Table.from_pydict(data, schema=table_schema)
     return table
+
 
 def store_batch(batch: pa.Table, destination_path: str, batch_number: int) -> None:
     pq.write_table(
@@ -136,4 +153,3 @@ def store_batch(batch: pa.Table, destination_path: str, batch_number: int) -> No
         os.path.join(destination_path, f"nasa_neo_data_{batch_number}.parquet"),
         compression="snappy",
     )
-
