@@ -51,7 +51,7 @@ def to_float(value: Any) -> Optional[float]:
     try:
         return float(value)
     except (ValueError, TypeError):
-        print(f"Warning: Could not convert '{value}' to int. Setting to None.")
+        print(f"Warning: Could not convert '{value}' to float. Setting to None.")
         return None
 
 
