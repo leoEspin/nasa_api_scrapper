@@ -15,7 +15,18 @@ def nested_get(d: dict[str, Any], keys: list[str], default: Any = None):
 
 
 class NeoAPI:
-    """class for interacting with the NASA Neo API"""
+    """
+    class for interacting with the NASA Neo API
+    To use the class first instanciate it:
+        client = NeoAPI(key_file_path, batch_size, request_size, page)
+    the  class assumes that the api key is stored in a .env file with the name API_KEY
+
+    A batch,  of size batch_size is  formed by doing a series of requests of size request_size
+    This  is  useful to have separate control of the number of asteroids' data stored in a single file.
+
+    The initialization parameter page allows to skip a number of pages of size request_size. 
+    this is useful for enabling making parallel calls to the API, and storing the corresponding data in separate files.
+    """
 
     base_url = "https://api.nasa.gov/neo/rest/v1/neo/browse"
     # top level keys to navigate/pull relevant portion of payload
@@ -27,9 +38,10 @@ class NeoAPI:
         key_file_path: Optional[str] = None,
         batch_size: int = 100,
         request_size: int = 20,
-    ):
+        page: int = 0,
+    ):  
         self.key = NeoAPI.get_api_key(key_file_path)
-        self.page = 0
+        self.page = page
         self.request_size = request_size
         self.batch_size = batch_size
         self._params = {
@@ -70,7 +82,7 @@ class NeoAPI:
                 raise Exception(out.json())
         return self._max_pages
 
-    def get_mini_batch(self):
+    def _get_mini_batch(self):
         if self.page > self.max_pages:
             raise ValueError("Maximum number of available pages reached.")
 
@@ -84,5 +96,5 @@ class NeoAPI:
     def get_batch(self):
         batch = []
         for _ in range(self.batch_responses):
-            batch.extend(self.get_mini_batch())
+            batch.extend(self._get_mini_batch())
         return batch
