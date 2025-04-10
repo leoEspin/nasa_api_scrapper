@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 from api_interface import NeoAPI
 from data_processing import process_batch, store_batch
 
@@ -41,15 +42,42 @@ def parcero():
     return huyparce.parse_args()
 
 
-if __name__ == "__main__":
-    arguments = parcero()
+async def batch_task(
+    key_file_path: str,
+    destination: str,
+    batch_size,
+    request_size,
+    batch_number: int = 0,
+):
     client = NeoAPI(
-        key_file_path=arguments.api_key_location,
-        batch_size=arguments.file_batch_size,
-        request_size=arguments.request_size,
+        key_file_path=key_file_path,
+        batch_size=batch_size,
+        request_size=request_size,
     )
-    nbatches = arguments.asteroids // client.batch_size
+    client.page = batch_number * client.batch_responses
+    raw_batch = client.get_batch()
+    batch = process_batch(raw_batch)
+    store_batch(batch, destination, batch_number=batch_number)
+
+
+async def main():
+    tasks = []
+    arguments = parcero()
+    nbatches = arguments.asteroids // arguments.file_batch_size
     for i in range(nbatches):
-        raw_batch = client.get_batch()
-        batch = process_batch(raw_batch)
-        store_batch(batch, arguments.destination, i)
+        task = asyncio.create_task(
+            batch_task(
+                arguments.api_key_location,
+                arguments.destination,
+                arguments.file_batch_size,
+                arguments.request_size,
+                batch_number=i,
+            )
+        )
+        tasks.append(task)
+
+    await asyncio.gather(*tasks)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

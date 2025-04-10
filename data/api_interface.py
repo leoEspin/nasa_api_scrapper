@@ -39,10 +39,10 @@ class NeoAPI:
         key_file_path: Optional[str] = None,
         batch_size: int = 100,
         request_size: int = 20,
-        page: int = 0,
+        start_page: int = 0,
     ):
         self.key = NeoAPI.get_api_key(key_file_path)
-        self.page = page
+        self.page = start_page
         self.request_size = request_size
         self.batch_size = batch_size
         self._params = {
