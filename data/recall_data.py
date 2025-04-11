@@ -60,6 +60,9 @@ async def batch_task(
     store_batch(batch, destination, batch_number=batch_number)
 
 
+# TODO: add checks that parameters  passed make sense
+# TODO: add dry_run mode
+# TODO: add tests
 async def main():
     tasks = []
     arguments = parcero()
