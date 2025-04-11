@@ -101,6 +101,7 @@ class NeoAPI:
                 return out.json().get(NeoAPI.response_key_to_keep)
         else:
             print(f'GET {NeoAPI.base_url}?{urlencode(self._params)}')
+            self.page += 1
             return []
         raise Exception(out.json())
 

@@ -50,8 +50,8 @@ def parcero():
 async def batch_task(
     key_file_path: str,
     destination: str,
-    batch_size,
-    request_size,
+    batch_size: int,
+    request_size: int,
     batch_number: int = 0,
     dry_run_mode: bool = False,
 ):
