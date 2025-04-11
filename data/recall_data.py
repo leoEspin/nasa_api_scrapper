@@ -39,6 +39,11 @@ def parcero():
         help="Number of asteroids to pull data for in a single request",
         default=20,
     )
+    huyparce.add_argument(
+        "--dry_run",
+        action="store_true",  # This makes it a boolean flag
+        help="Enable dry run mode (no actual API calls or file writes)",
+    )
     return huyparce.parse_args()
 
 
@@ -48,20 +53,24 @@ async def batch_task(
     batch_size,
     request_size,
     batch_number: int = 0,
+    dry_run_mode: bool = False,
 ):
     client = NeoAPI(
         key_file_path=key_file_path,
         batch_size=batch_size,
         request_size=request_size,
+        dry_run=dry_run_mode
     )
     client.page = batch_number * client.batch_responses
     raw_batch = client.get_batch()
-    batch = process_batch(raw_batch)
-    store_batch(batch, destination, batch_number=batch_number)
+    if not dry_run_mode:
+        batch = process_batch(raw_batch)
+    else:
+        batch = []
+    store_batch(batch, destination, batch_number=batch_number, dry_run=dry_run_mode)
 
 
 # TODO: add checks that parameters  passed make sense
-# TODO: add dry_run mode
 # TODO: add tests
 # TODO: add code for final odd-sized batch
 async def main():
@@ -76,6 +85,7 @@ async def main():
                 arguments.file_batch_size,
                 arguments.request_size,
                 batch_number=i,
+                dry_run_mode=arguments.dry_run
             )
         )
         tasks.append(task)

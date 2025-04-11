@@ -165,9 +165,13 @@ def process_batch(
     return table
 
 
-def store_batch(batch: pa.Table, destination_path: str, batch_number: int) -> None:
-    pq.write_table(
-        batch,
-        os.path.join(destination_path, f"nasa_neo_data_{batch_number}.parquet"),
-        compression="snappy",
-    )
+def store_batch(batch: pa.Table, destination_path: str, batch_number: int, dry_run: bool = False) -> None:
+    fname = os.path.join(destination_path, f"nasa_neo_data_{batch_number}.parquet")
+    if not dry_run:
+        pq.write_table(
+            batch,
+            fname,
+            compression="snappy",
+        )
+    else:
+        print(f'Would store file {fname}')

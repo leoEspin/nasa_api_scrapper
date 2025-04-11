@@ -6,6 +6,7 @@ from urllib.parse import urlencode
 
 
 def nested_get(d: dict[str, Any], keys: list[str], default: Any = None):
+    '''like dict.get() method, but for nested objects'''
     for key in keys:
         if isinstance(d, dict) and key in d:
             d = d[key]
@@ -27,6 +28,9 @@ class NeoAPI:
 
     The initialization parameter page allows to skip a number of pages of size request_size.
     this is useful for enabling making parallel calls to the API, and storing the corresponding data in separate files.
+
+    In dry_run mode the client just prints the requests it would make and get_batch() returns and empty list
+        client = NeoAPI(dry_run=True)
     """
 
     base_url = "https://api.nasa.gov/neo/rest/v1/neo/browse"
@@ -40,6 +44,7 @@ class NeoAPI:
         batch_size: int = 100,
         request_size: int = 20,
         start_page: int = 0,
+        dry_run: bool = False
     ):
         self.key = NeoAPI.get_api_key(key_file_path)
         self.page = start_page
@@ -51,6 +56,7 @@ class NeoAPI:
             "size": self.request_size,
         }
         self._max_pages = None
+        self.dry_run_mode = dry_run
 
     @property
     def batch_responses(self) -> int:
@@ -88,10 +94,14 @@ class NeoAPI:
             raise ValueError("Maximum number of available pages reached.")
 
         self._params["page"] = self.page
-        out = requests.get(f"{NeoAPI.base_url}?{urlencode(self._params)}")
-        if out.ok:
-            self.page += 1
-            return out.json().get(NeoAPI.response_key_to_keep)
+        if not self.dry_run_mode:
+            out = requests.get(f"{NeoAPI.base_url}?{urlencode(self._params)}")
+            if out.ok:
+                self.page += 1
+                return out.json().get(NeoAPI.response_key_to_keep)
+        else:
+            print(f'GET {NeoAPI.base_url}?{urlencode(self._params)}')
+            return []
         raise Exception(out.json())
 
     def get_batch(self) -> list[dict[str, Any]]:
