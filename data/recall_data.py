@@ -63,6 +63,7 @@ async def batch_task(
 # TODO: add checks that parameters  passed make sense
 # TODO: add dry_run mode
 # TODO: add tests
+# TODO: add code for final odd-sized batch
 async def main():
     tasks = []
     arguments = parcero()
