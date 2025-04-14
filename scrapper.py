@@ -30,7 +30,7 @@ def parcero():
     huyparce.add_argument(
         "--file_batch_size",
         type=int,
-        help="Number of asteroids data to store in a single file",
+        help="Number of asteroids' data to store in a single file",
         default=100,
     )
     huyparce.add_argument(
@@ -69,13 +69,18 @@ async def batch_task(
         batch = []
     store_batch(batch, destination, batch_number=batch_number, dry_run=dry_run_mode)
 
-
-# TODO: add checks that parameters  passed make sense
 # TODO: add tests
 # TODO: add code for final odd-sized batch
 async def main():
     tasks = []
     arguments = parcero()
+    if not os.path.exists(arguments.destination):
+        os.makedirs(arguments.destination)
+    if arguments.asteroids < arguments.file_batch_size:
+        raise ValueError('The number of asteroids requested must be greater than the batch size')
+    if arguments.file_batch_size % arguments.request_size != 0:
+        raise ValueError('The batch size must be a multiple of the request size')
+        
     nbatches = arguments.asteroids // arguments.file_batch_size
     for i in range(nbatches):
         task = asyncio.create_task(
