@@ -1,19 +1,17 @@
-# Python Coding Exercise
+# Readme
 
-Your task is to build a python script to gather data from NASA's Near Earth Object Web Service API, and save that data. We'll also perform some aggregations to make reporting on Near Earth Objects simpler for our theoretical website.
+The python script `scrapper.py` pulls data from [NASA's Near Earth Object Web Service API](https://api.nasa.gov), and saves that data locally in Parquet format.
 
-The page for the API is here: https://api.nasa.gov
-
-To save our data, we'll write it out to the local filesystem as if we're saving it to an S3 Data Lake. This will save having to mess with AWS credentials. Your files should be saved in the same data directory in which this README resides, in whatever folder structure you would use to save the data in S3.
-
-### Requirements
+### How to use the script
 - Create an account at [api.nasa.gov](https://api.nasa.gov) to get an API key
-- Find the docs for the Near Earth Object Web Service (below the signup on the same page)
-- Data should be saved in Parquet format
-- Design the code such that the scraping and processing part could easily be scaled up GBs of data by swapping in and out various implementations.
-- Use the Browse API to request data
-    - There are over 1800 pages of near Earth objects, so we'll limit ourselves to gathering the first 200 near earth objects
-- We want to save the following columns in our file(s):
+- Store the key in a `.env` file under the key `API_KEY`
+- Example of how to use the scrapper:
+    ```bash
+    python  scrapper.py --destination=data --api_key_location=. --asteroids=20 --file_batch_size=20 --request_size=20
+    ```
+- The  scrapper has a `dry_run` debugging mode which  only prints  which requests would be made to the API and to what files would
+    the payloads be saved
+- The script stores the following columns in the parquet file(s):
     - id
     - neo_reference_id
     - name
@@ -31,18 +29,6 @@ To save our data, we'll write it out to the local filesystem as if we're saving 
     - last observation date
     - observations used
     - orbital period
-- Store the following aggregations:
+- The script stores also the following aggregated columns:
     - The total number of times our 200 near earth objects approached closer than 0.2 astronomical units (found as miss_distance.astronomical)
     - The number of close approaches recorded in each year present in the data
-
-### Submitting your coding exercise
-Once you have finished your script, please create a PR into Tekmetric/interview. Don't forget to update the gitignore if that is required!
-
-
-### Notes
-* current execution time in  cloud shell (Intel(R) Xeon(R) CPU @ 2.20GHz,  4 CPUs): pulling data  for 200 asteroids: 9.318s
-* I'm using a list type for `close_approach_years`, which I think makes more sense than a dictionary. I'm not an astrophysicist, but I'd image all asteroids have a return period longer than a year. otherwise they'd be satellites
-* example of how to use the scrapper:
-    ```bash
-    python  recall_data.py --destination=data --api_key_location=data --asteroids=20 --file_batch_size=20 --request_size=20
-    ```
