@@ -1,9 +1,0 @@
-{
-    "compilerOptions": {
-      "target": "ESNext",
-      "module": "CommonJS",
-      "lib": ["ESNext"],
-      "types": ["node", "playwright"]
-    }
-  }
-  
