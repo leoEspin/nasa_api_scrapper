@@ -1,0 +1,14 @@
+frontend/node_modules
+backend/.idea/*
+backend/*.iml
+backend/target/**
+
+#ignore playwright resources
+qa/node_modules/
+qa/test-results/
+qa/playwright-report/
+qa/blob-report/
+qa/playwright/.cache/
+
+# ignoring the .idea folder
+.idea
