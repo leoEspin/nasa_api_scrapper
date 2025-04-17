@@ -139,7 +139,7 @@ def process_batch(
             (
                 sum(
                     [
-                        float(nested_get(x, ["miss_distance", "astronomical"])) < 0.2
+                        float(nested_get(x, ["miss_distance", "astronomical"], default=1)) < 0.2
                         for x in item["close_approach_data"]
                     ]
                 )
