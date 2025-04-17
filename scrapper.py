@@ -1,3 +1,4 @@
+import os
 import argparse
 import asyncio
 from api_interface import NeoAPI
