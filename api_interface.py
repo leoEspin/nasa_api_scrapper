@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 
 def nested_get(d: dict[str, Any], keys: list[str], default: Any = None):
-    '''like dict.get() method, but for nested objects'''
+    """like dict.get() method, but for nested objects"""
     for key in keys:
         if isinstance(d, dict) and key in d:
             d = d[key]
@@ -44,7 +44,7 @@ class NeoAPI:
         batch_size: int = 100,
         request_size: int = 20,
         start_page: int = 0,
-        dry_run: bool = False
+        dry_run: bool = False,
     ):
         self.key = NeoAPI.get_api_key(key_file_path)
         self.page = start_page
@@ -100,7 +100,7 @@ class NeoAPI:
                 self.page += 1
                 return out.json().get(NeoAPI.response_key_to_keep)
         else:
-            print(f'GET {NeoAPI.base_url}?{urlencode(self._params)}')
+            print(f"GET {NeoAPI.base_url}?{urlencode(self._params)}")
             self.page += 1
             return []
         raise Exception(out.json())

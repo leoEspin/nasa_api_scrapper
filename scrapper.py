@@ -59,7 +59,7 @@ async def batch_task(
         key_file_path=key_file_path,
         batch_size=batch_size,
         request_size=request_size,
-        dry_run=dry_run_mode
+        dry_run=dry_run_mode,
     )
     client.page = batch_number * client.batch_responses
     raw_batch = client.get_batch()
@@ -69,6 +69,7 @@ async def batch_task(
         batch = []
     store_batch(batch, destination, batch_number=batch_number, dry_run=dry_run_mode)
 
+
 # TODO: add tests
 # TODO: add code for final odd-sized batch
 async def main():
@@ -77,10 +78,12 @@ async def main():
     if not os.path.exists(arguments.destination):
         os.makedirs(arguments.destination)
     if arguments.asteroids < arguments.file_batch_size:
-        raise ValueError('The number of asteroids requested must be greater than the batch size')
+        raise ValueError(
+            "The number of asteroids requested must be greater than the batch size"
+        )
     if arguments.file_batch_size % arguments.request_size != 0:
-        raise ValueError('The batch size must be a multiple of the request size')
-        
+        raise ValueError("The batch size must be a multiple of the request size")
+
     nbatches = arguments.asteroids // arguments.file_batch_size
     for i in range(nbatches):
         task = asyncio.create_task(
@@ -90,7 +93,7 @@ async def main():
                 arguments.file_batch_size,
                 arguments.request_size,
                 batch_number=i,
-                dry_run_mode=arguments.dry_run
+                dry_run_mode=arguments.dry_run,
             )
         )
         tasks.append(task)

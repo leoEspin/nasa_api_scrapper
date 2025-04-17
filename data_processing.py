@@ -55,16 +55,19 @@ def to_float(value: Any) -> Optional[float]:
         print(f"Warning: Could not convert '{value}' to float. Setting to None.")
         return None
 
+
 def to_timestamp(date_string: Optional[str], format_string: str) -> Optional[datetime]:
     if date_string is None:
         return None
     try:
         return datetime.strptime(date_string, format_string)
     except ValueError:
-        print(f"Warning: Could not convert '{date_string}' to datetime. Setting to None.")
+        print(
+            f"Warning: Could not convert '{date_string}' to datetime. Setting to None."
+        )
         return None
 
-    
+
 def process_batch(
     obj: dict[str, Any], table_schema: pa.Schema = main_schema
 ) -> pa.Table:
@@ -107,14 +110,18 @@ def process_batch(
             for item in obj
         ],
         "estimated_diameter_max": [
-            to_float(nested_get(item, ["estimated_diameter", "meters", "estimated_diameter_max"]))
+            to_float(
+                nested_get(
+                    item, ["estimated_diameter", "meters", "estimated_diameter_max"]
+                )
+            )
             for item in obj
         ],
         "first_observation_date": [
             to_timestamp(
                 nested_get(item, ["orbital_data", "first_observation_date"]), "%Y-%m-%d"
             )
-            for item in obj 
+            for item in obj
         ],
         "last_observation_date": [
             to_timestamp(
@@ -149,7 +156,10 @@ def process_batch(
             (
                 sum(
                     [
-                        float(nested_get(x, ["miss_distance", "astronomical"], default=1)) < 0.2
+                        float(
+                            nested_get(x, ["miss_distance", "astronomical"], default=1)
+                        )
+                        < 0.2
                         for x in item["close_approach_data"]
                     ]
                 )
@@ -175,7 +185,9 @@ def process_batch(
     return table
 
 
-def store_batch(batch: pa.Table, destination_path: str, batch_number: int, dry_run: bool = False) -> None:
+def store_batch(
+    batch: pa.Table, destination_path: str, batch_number: int, dry_run: bool = False
+) -> None:
     fname = os.path.join(destination_path, f"nasa_neo_data_{batch_number}.parquet")
     if not dry_run:
         pq.write_table(
@@ -184,4 +196,4 @@ def store_batch(batch: pa.Table, destination_path: str, batch_number: int, dry_r
             compression="snappy",
         )
     else:
-        print(f'Would store file {fname}')
+        print(f"Would store file {fname}")
