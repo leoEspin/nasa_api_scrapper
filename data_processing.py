@@ -18,6 +18,7 @@ main_schema = pa.schema(
         pa.field("absolute_magnitude_h", pa.float64(), nullable=True),
         pa.field("is_potentially_hazardous_asteroid", pa.bool_(), nullable=True),
         pa.field("estimated_diameter_min", pa.float64(), nullable=True),
+        pa.field("estimated_diameter_max", pa.float64(), nullable=True),
         pa.field("first_observation_date", pa.timestamp("s"), nullable=False),
         pa.field("last_observation_date", pa.timestamp("s"), nullable=False),
         pa.field("observations_used", pa.int64(), nullable=True),
@@ -97,14 +98,14 @@ def process_batch(
             for item in obj
         ],
         "estimated_diameter_max": [
-            nested_get(item, ["estimated_diameter", "meters", "estimated_diameter_max"])
+            to_float(nested_get(item, ["estimated_diameter", "meters", "estimated_diameter_max"]))
             for item in obj
         ],
         "first_observation_date": [
             datetime.strptime(
                 nested_get(item, ["orbital_data", "first_observation_date"]), "%Y-%m-%d"
             )
-            for item in obj
+            for item in obj # need safe time conversion
         ],
         "last_observation_date": [
             datetime.strptime(
