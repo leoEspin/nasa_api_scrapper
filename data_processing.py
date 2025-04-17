@@ -19,8 +19,8 @@ main_schema = pa.schema(
         pa.field("is_potentially_hazardous_asteroid", pa.bool_(), nullable=True),
         pa.field("estimated_diameter_min", pa.float64(), nullable=True),
         pa.field("estimated_diameter_max", pa.float64(), nullable=True),
-        pa.field("first_observation_date", pa.timestamp("s"), nullable=False),
-        pa.field("last_observation_date", pa.timestamp("s"), nullable=False),
+        pa.field("first_observation_date", pa.timestamp("s"), nullable=True),
+        pa.field("last_observation_date", pa.timestamp("s"), nullable=True),
         pa.field("observations_used", pa.int64(), nullable=True),
         pa.field("orbital_period", pa.float64(), nullable=True),
         pa.field("close_approach_miss_distance", pa.float64(), nullable=True),
@@ -55,7 +55,16 @@ def to_float(value: Any) -> Optional[float]:
         print(f"Warning: Could not convert '{value}' to float. Setting to None.")
         return None
 
+def to_timestamp(date_string: Optional[str], format_string: str) -> Optional[datetime]:
+    if date_string is None:
+        return None
+    try:
+        return datetime.strptime(date_string, format_string)
+    except ValueError:
+        print(f"Warning: Could not convert '{date_string}' to datetime. Setting to None.")
+        return None
 
+    
 def process_batch(
     obj: dict[str, Any], table_schema: pa.Schema = main_schema
 ) -> pa.Table:
@@ -102,13 +111,13 @@ def process_batch(
             for item in obj
         ],
         "first_observation_date": [
-            datetime.strptime(
+            to_timestamp(
                 nested_get(item, ["orbital_data", "first_observation_date"]), "%Y-%m-%d"
             )
-            for item in obj # need safe time conversion
+            for item in obj 
         ],
         "last_observation_date": [
-            datetime.strptime(
+            to_timestamp(
                 nested_get(item, ["orbital_data", "last_observation_date"]), "%Y-%m-%d"
             )
             for item in obj
