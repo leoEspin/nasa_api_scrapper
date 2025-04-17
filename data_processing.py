@@ -141,11 +141,7 @@ def process_batch(
             to_float(nested_get(x, ["miss_distance", "kilometers"])) for x in close_data
         ],
         "close_approach_date": [
-            (
-                datetime.strptime(x.get("close_approach_date_full"), "%Y-%b-%d %H:%M")
-                if x.get("close_approach_date_full") is not None
-                else None
-            )
+            to_timestamp(x.get("close_approach_date_full"), "%Y-%b-%d %H:%M")
             for x in close_data
         ],
         "close_approach_speed": [
