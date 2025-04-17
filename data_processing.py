@@ -68,7 +68,7 @@ def process_batch(
                     x, ["miss_distance", "astronomical"], default=float("inf")
                 ),
             )
-            if len(item["close_approach_data"]) > 0
+            if len(item.get("close_approach_data", [])) > 0
             else {}
         )
         for item in obj
@@ -143,7 +143,7 @@ def process_batch(
                         for x in item["close_approach_data"]
                     ]
                 )
-                if len(item["close_approach_data"]) > 0
+                if len(item.get("close_approach_data", [])) > 0
                 else None
             )
             for item in obj
@@ -155,7 +155,7 @@ def process_batch(
                     for x in item["close_approach_data"]
                     if x.get("close_approach_date") is not None
                 ]
-                if len(item["close_approach_data"]) > 0
+                if len(item.get("close_approach_data", [])) > 0
                 else []
             )
             for item in obj
