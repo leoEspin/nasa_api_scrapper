@@ -1,6 +1,5 @@
 import os
 import argparse
-import asyncio
 from api_interface import NeoAPI
 from data_processing import process_batch, store_batch
 
@@ -73,8 +72,7 @@ async def batch_task(
 
 # TODO: add tests
 # TODO: add code for final odd-sized batch
-async def main():
-    tasks = []
+if __name__ == "__main__":
     arguments = parcero()
     if not os.path.exists(arguments.destination):
         os.makedirs(arguments.destination)
@@ -85,22 +83,17 @@ async def main():
     if arguments.file_batch_size % arguments.request_size != 0:
         raise ValueError("The batch size must be a multiple of the request size")
 
+    client = NeoAPI(
+        key_file_path=arguments.api_key_location,
+        batch_size=arguments.file_batch_size,
+        request_size=arguments.request_size,
+        dry_run=arguments.dry_run
+    )
     nbatches = arguments.asteroids // arguments.file_batch_size
     for i in range(nbatches):
-        task = asyncio.create_task(
-            batch_task(
-                arguments.api_key_location,
-                arguments.destination,
-                arguments.file_batch_size,
-                arguments.request_size,
-                batch_number=i,
-                dry_run_mode=arguments.dry_run,
-            )
-        )
-        tasks.append(task)
-
-    await asyncio.gather(*tasks)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+        raw_batch = client.get_batch()
+        if not arguments.dry_run:
+            batch = process_batch(raw_batch)
+        else:
+            batch = []
+        store_batch(batch, arguments.destination, i, dry_run=arguments.dry_run)
