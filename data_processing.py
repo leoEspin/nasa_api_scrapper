@@ -182,7 +182,7 @@ def process_batch(
         ],
     }
     table = pa.Table.from_pydict(data, schema=table_schema)
-    return table
+    return table, sum([x for x in data["very_close_approaches"] if x is not None])
 
 
 def store_batch(

@@ -47,31 +47,9 @@ def parcero():
     return huyparce.parse_args()
 
 
-async def batch_task(
-    key_file_path: str,
-    destination: str,
-    batch_size: int,
-    request_size: int,
-    batch_number: int = 0,
-    dry_run_mode: bool = False,
-):
-    client = NeoAPI(
-        key_file_path=key_file_path,
-        batch_size=batch_size,
-        request_size=request_size,
-        dry_run=dry_run_mode,
-    )
-    client.page = batch_number * client.batch_responses
-    raw_batch = client.get_batch()
-    if not dry_run_mode:
-        batch = process_batch(raw_batch)
-    else:
-        batch = []
-    store_batch(batch, destination, batch_number=batch_number, dry_run=dry_run_mode)
-
-
 # TODO: add tests
 # TODO: add code for final odd-sized batch
+total = 0
 if __name__ == "__main__":
     arguments = parcero()
     if not os.path.exists(arguments.destination):
@@ -93,7 +71,10 @@ if __name__ == "__main__":
     for i in range(nbatches):
         raw_batch = client.get_batch()
         if not arguments.dry_run:
-            batch = process_batch(raw_batch)
+            batch, subtotal = process_batch(raw_batch)
         else:
             batch = []
+            subtotal = 0
+        total += subtotal
         store_batch(batch, arguments.destination, i, dry_run=arguments.dry_run)
+    print(f"Total number of asteroids with very close approaches: {total}")
