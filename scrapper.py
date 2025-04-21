@@ -63,12 +63,12 @@ async def batch_task(
         dry_run=dry_run_mode,
     )
     client.page = batch_number * client.batch_responses
-    raw_batch = client.get_batch()
+    raw_batch = await asyncio.to_thread(client.get_batch)
     if not dry_run_mode:
         batch = process_batch(raw_batch)
     else:
         batch = []
-    store_batch(batch, destination, batch_number=batch_number, dry_run=dry_run_mode)
+    await asyncio.to_thread(store_batch, batch=batch, destination_path=destination, batch_number=batch_number, dry_run=dry_run_mode)
 
 
 # TODO: add tests
