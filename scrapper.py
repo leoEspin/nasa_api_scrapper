@@ -107,7 +107,7 @@ async def main():
         tasks.append(task)
 
     results = await asyncio.gather(*tasks)
-    print(f'Total close encounters for asteroids processed: {sum(results)}')
+    print(f"Total close approaches for asteroids processed: {sum(results)}")
 
 
 if __name__ == "__main__":

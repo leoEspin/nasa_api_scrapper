@@ -71,10 +71,10 @@ def to_timestamp(date_string: Optional[str], format_string: str) -> Optional[dat
 def process_batch(
     obj: dict[str, Any], table_schema: pa.Schema = main_schema
 ) -> tuple[pa.Table, int]:
-    '''
+    """
     process raw API payload and returns  pyarrow table with schema main_schema
     It also returns the total number of asteroids with very close approaches (less than 0.2 AU)
-    '''
+    """
     # pulling closest approach data for further processing.
     # minimizing a high-precision double, so ok assuming uniqueness
     close_data = [
