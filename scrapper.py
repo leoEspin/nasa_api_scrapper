@@ -65,7 +65,7 @@ async def batch_task(
     client.page = batch_number * client.batch_responses
     raw_batch = await asyncio.to_thread(client.get_batch)
     if not dry_run_mode:
-        batch = process_batch(raw_batch)
+        batch, subtotal = process_batch(raw_batch)
     else:
         batch = []
     await asyncio.to_thread(
@@ -75,6 +75,7 @@ async def batch_task(
         batch_number=batch_number,
         dry_run=dry_run_mode,
     )
+    return subtotal
 
 
 # TODO: add tests
@@ -105,7 +106,8 @@ async def main():
         )
         tasks.append(task)
 
-    await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
+    print(f'Total close encounters for asteroids processed: {sum(results)}')
 
 
 if __name__ == "__main__":

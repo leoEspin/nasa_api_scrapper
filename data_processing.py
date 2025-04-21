@@ -70,7 +70,7 @@ def to_timestamp(date_string: Optional[str], format_string: str) -> Optional[dat
 
 def process_batch(
     obj: dict[str, Any], table_schema: pa.Schema = main_schema
-) -> pa.Table:
+) -> tuple[pa.Table, int]:
     # pulling closest approach data for further processing.
     # minimizing a high-precision double, so ok assuming uniqueness
     close_data = [
@@ -178,7 +178,7 @@ def process_batch(
         ],
     }
     table = pa.Table.from_pydict(data, schema=table_schema)
-    return table
+    return table, sum([x for x in data["very_close_approaches"] if x is not None])
 
 
 def store_batch(
