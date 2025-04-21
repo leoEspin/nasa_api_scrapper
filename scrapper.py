@@ -68,7 +68,13 @@ async def batch_task(
         batch = process_batch(raw_batch)
     else:
         batch = []
-    await asyncio.to_thread(store_batch, batch=batch, destination_path=destination, batch_number=batch_number, dry_run=dry_run_mode)
+    await asyncio.to_thread(
+        store_batch,
+        batch=batch,
+        destination_path=destination,
+        batch_number=batch_number,
+        dry_run=dry_run_mode,
+    )
 
 
 # TODO: add tests

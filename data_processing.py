@@ -167,7 +167,7 @@ def process_batch(
         "close_approach_years": [
             (
                 [
-                    x.get("close_approach_date").split("-")[0] # safe as long as string
+                    x.get("close_approach_date").split("-")[0]  # safe as long as string
                     for x in item["close_approach_data"]
                     if x.get("close_approach_date") is not None
                 ]
