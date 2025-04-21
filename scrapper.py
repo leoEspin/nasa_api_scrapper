@@ -65,7 +65,7 @@ if __name__ == "__main__":
         key_file_path=arguments.api_key_location,
         batch_size=arguments.file_batch_size,
         request_size=arguments.request_size,
-        dry_run=arguments.dry_run
+        dry_run=arguments.dry_run,
     )
     nbatches = arguments.asteroids // arguments.file_batch_size
     for i in range(nbatches):
@@ -77,4 +77,4 @@ if __name__ == "__main__":
             subtotal = 0
         total += subtotal
         store_batch(batch, arguments.destination, i, dry_run=arguments.dry_run)
-    print(f"Total number of asteroids with very close approaches: {total}")
+    print(f"Total number of very close approaches: {total}")
