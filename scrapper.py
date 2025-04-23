@@ -1,5 +1,6 @@
 import os
 import argparse
+from concurrent.futures import ProcessPoolExecutor
 from api_interface import NeoAPI
 from data_processing import process_batch, store_batch
 
@@ -79,7 +80,6 @@ def batch_task(
 
 # TODO: add tests
 # TODO: add code for final odd-sized batch
-total = 0
 if __name__ == "__main__":
     arguments = parcero()
     if not os.path.exists(arguments.destination):
@@ -92,13 +92,20 @@ if __name__ == "__main__":
         raise ValueError("The batch size must be a multiple of the request size")
 
     nbatches = arguments.asteroids // arguments.file_batch_size
-    for i in range(nbatches):
-        total += batch_task(
-            arguments.api_key_location,
-            arguments.destination,
-            arguments.file_batch_size,
-            arguments.request_size,
-            batch_number=i,
-            dry_run_mode=arguments.dry_run,
-        )
-    print(f"Total number of very close approaches: {total}")
+    params = {
+        "key_file_path": arguments.api_key_location,
+        "destination": arguments.destination,
+        "batch_size": arguments.file_batch_size,
+        "request_size": arguments.request_size,
+        "batch_number": 0,
+        "dry_run_mode": arguments.dry_run,
+    }
+    futures = []
+    with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
+        for i in range(nbatches):
+            params["batch_number"] = i
+            futures.append(executor.submit(batch_task, **params))
+
+    print(
+        f"Total number of very close approaches: {sum([future.result() for future in futures])}"
+    )
