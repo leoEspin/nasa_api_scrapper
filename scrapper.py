@@ -1,8 +1,8 @@
 import os
 import argparse
 import asyncio
-from api_interface import NeoAPI
-from data_processing import process_batch, store_batch
+from nas.api_interface import NeoAPI
+from nas.data_processing import process_batch, store_batch
 
 
 def parcero():
@@ -68,6 +68,7 @@ async def batch_task(
         batch, subtotal = process_batch(raw_batch)
     else:
         batch = []
+        subtotal = 0
     await asyncio.to_thread(
         store_batch,
         batch=batch,
