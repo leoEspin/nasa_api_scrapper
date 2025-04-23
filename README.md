@@ -1,6 +1,11 @@
 # Readme
 
-The python script `scrapper.py` pulls data from [NASA's Near Earth Object Web Service API](https://api.nasa.gov), and saves that data locally in Parquet format.
+The python script `scrapper.py` pulls data from [NASA's Near Earth Object Web Service API](https://api.nasa.gov), and saves that data locally in Parquet format. There are 3 versions of the script
+
+* the `master` branch  hosts an asyncio-based concurrency-capable version 
+* the `serial_version` branch hosts a standard sequential version
+* the `multi_proc_version` branch hosts a parallel-processing version based on  the `concurrent.futures` module
+
 
 ### How to use the script
 - Create an account at [api.nasa.gov](https://api.nasa.gov) to get an API key
@@ -9,8 +14,7 @@ The python script `scrapper.py` pulls data from [NASA's Near Earth Object Web Se
     ```bash
     python  scrapper.py --destination=data --api_key_location=. --asteroids=20 --file_batch_size=20 --request_size=20
     ```
-- The  scrapper has a `dry_run` debugging mode which  only prints  which requests would be made to the API and to what files would
-    the payloads be saved
+- The  scrapper has a `dry_run` debugging mode which  only prints  which requests would be made to the API and to what files would the payloads be saved
 - The script stores the following columns in the parquet file(s):
     - id
     - neo_reference_id
