@@ -47,6 +47,36 @@ def parcero():
     return huyparce.parse_args()
 
 
+def batch_task(
+    key_file_path: str,
+    destination: str,
+    batch_size: int,
+    request_size: int,
+    batch_number: int = 0,
+    dry_run_mode: bool = False,
+):
+    client = NeoAPI(
+        key_file_path=key_file_path,
+        batch_size=batch_size,
+        request_size=request_size,
+        dry_run=dry_run_mode,
+    )
+    client.page = batch_number * client.batch_responses
+    raw_batch = client.get_batch()
+    if not dry_run_mode:
+        batch, subtotal = process_batch(raw_batch)
+    else:
+        batch = []
+        subtotal = 0
+    store_batch(
+        batch=batch,
+        destination_path=destination,
+        batch_number=batch_number,
+        dry_run=dry_run_mode,
+    )
+    return subtotal
+
+
 # TODO: add tests
 # TODO: add code for final odd-sized batch
 total = 0
@@ -61,20 +91,14 @@ if __name__ == "__main__":
     if arguments.file_batch_size % arguments.request_size != 0:
         raise ValueError("The batch size must be a multiple of the request size")
 
-    client = NeoAPI(
-        key_file_path=arguments.api_key_location,
-        batch_size=arguments.file_batch_size,
-        request_size=arguments.request_size,
-        dry_run=arguments.dry_run,
-    )
     nbatches = arguments.asteroids // arguments.file_batch_size
     for i in range(nbatches):
-        raw_batch = client.get_batch()
-        if not arguments.dry_run:
-            batch, subtotal = process_batch(raw_batch)
-        else:
-            batch = []
-            subtotal = 0
-        total += subtotal
-        store_batch(batch, arguments.destination, i, dry_run=arguments.dry_run)
+        total += batch_task(
+            arguments.api_key_location,
+            arguments.destination,
+            arguments.file_batch_size,
+            arguments.request_size,
+            batch_number=i,
+            dry_run_mode=arguments.dry_run,
+        )
     print(f"Total number of very close approaches: {total}")
