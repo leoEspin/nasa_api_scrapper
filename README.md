@@ -31,7 +31,7 @@ The python script `scrapper.py` pulls data from [NASA's Near Earth Object Web Se
     - orbital period
 - The script stores also the following aggregated columns:
     - The total number of times our 200 near earth objects approached closer than 0.2 astronomical units (found as miss_distance.astronomical)
-    - The number of close approaches recorded in each year present in the data
+    - The years where close approaches were recorded 
 
 
 ### Notes
