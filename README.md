@@ -38,3 +38,4 @@ The python script `scrapper.py` pulls data from [NASA's Near Earth Object Web Se
 * current execution time in cloud shell (Intel(R) Xeon(R) CPU @ 2.20GHz, 4 CPUs), pulling data for 300 asteroids: 
     * sequential version: 13.748s
     * async version: 5.534s
+    * multi-process version: 4.910s
