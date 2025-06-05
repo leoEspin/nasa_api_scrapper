@@ -1,8 +1,8 @@
 import os
 import argparse
 from concurrent.futures import ProcessPoolExecutor
-from api_interface import NeoAPI
-from data_processing import process_batch, store_batch
+from nas.api_interface import NeoAPI
+from nas.data_processing import process_batch, store_batch
 
 
 def parcero():

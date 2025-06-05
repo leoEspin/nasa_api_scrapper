@@ -4,7 +4,7 @@ from datetime import datetime
 from collections import Counter
 import pyarrow as pa
 import pyarrow.parquet as pq
-from api_interface import nested_get
+from nas.api_interface import nested_get
 
 
 main_schema = pa.schema(
