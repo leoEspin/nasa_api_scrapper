@@ -46,21 +46,32 @@ class NeoAPI:
         start_page: int = 0,
         dry_run: bool = False,
     ):
-        self.key = NeoAPI.get_api_key(key_file_path)
-        self.page = start_page
-        self.request_size = request_size
-        self.batch_size = batch_size
+        self._key = NeoAPI.get_api_key(key_file_path)
+        self._page = start_page
+        self._request_size = request_size
+        self._batch_size = batch_size
         self._params = {
-            "api_key": self.key,
-            "page": self.page,
-            "size": self.request_size,
+            "api_key": self._key,
+            "page": self._page,
+            "size": self._request_size,
         }
         self._max_pages = None
         self.dry_run_mode = dry_run
 
     @property
+    def page(self) -> int:
+        return self._page
+
+    @page.setter
+    def page(self, value: int) -> None:
+        if not isinstance(value, int):
+            raise ValueError("page attribute must be an integer")
+        self._page = value
+
+    @property
     def batch_responses(self) -> int:
-        return self.batch_size // self.request_size
+        """the number of requests needed to complete a batch"""
+        return self._batch_size // self._request_size
 
     @staticmethod
     def get_api_key(path: Optional[str]) -> str:
@@ -80,7 +91,7 @@ class NeoAPI:
     @property
     def max_pages(self) -> int:
         if self._max_pages is None:
-            params = {"api_key": self.key, "page": 0, "size": 1}
+            params = {"api_key": self._key, "page": 0, "size": 1}
             out = requests.get(f"{NeoAPI.base_url}?{urlencode(params)}")
             if out.ok:
                 response_data = out.json()
@@ -90,18 +101,18 @@ class NeoAPI:
         return self._max_pages
 
     def _get_mini_batch(self) -> list[dict[str, Any]]:
-        if self.page > self.max_pages:
+        if self._page > self.max_pages:
             raise ValueError("Maximum number of available pages reached.")
 
-        self._params["page"] = self.page
+        self._params["page"] = self._page
         if not self.dry_run_mode:
             out = requests.get(f"{NeoAPI.base_url}?{urlencode(self._params)}")
             if out.ok:
-                self.page += 1
+                self._page += 1
                 return out.json().get(NeoAPI.response_key_to_keep)
         else:
             print(f"GET {NeoAPI.base_url}?{urlencode(self._params)}")
-            self.page += 1
+            self._page += 1
             return []
         raise Exception(out.json())
 
